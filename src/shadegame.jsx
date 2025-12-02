@@ -86,7 +86,8 @@ export default function ShadeGame() {
     if (nextScenarioObj) setTargetShade(getInitialTargetShade(nextScenarioObj, null));
   };
 
-  console.log("Choice", choice);
+
+  console.log("choice", choice);
 
   return (
     <div className="p-6 max-w-xl mx-auto space-y-6" style={{ fontFamily: "'Inter', sans-serif", marginLeft: "1in", marginRight: "1in" }}>
@@ -147,7 +148,6 @@ export default function ShadeGame() {
           )}
         </div>
       )}
-
       {/* <div>Redemption Rate: {Math.round(redemption)}</div>
       <div>Variant: {variantKey}</div> */}
     </div>
