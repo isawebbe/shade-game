@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { scenarios, randomShade, shuffleArray } from "./scenarios";
 import "./index.css"; // ensure this has the Inter font import or fallback
 
@@ -34,6 +34,14 @@ export default function ShadeGame() {
 
   const currentScenario = scenarios[scenarioIndex]?.variants[variantKey];
 
+  const startMatch = useCallback((opt) => {
+    if (!currentScenario) return;
+    setChoice(opt);
+    setTargetShade(getInitialTargetShade(currentScenario, opt));
+    setMatchValue(128);
+    setMessage(null);
+  }, [currentScenario]);
+
   // Automatically start match for the first option on scenario load
   useEffect(() => {
     if (currentScenario) {
@@ -42,14 +50,7 @@ export default function ShadeGame() {
         startMatch(firstOption);
       }
     }
-  }, [currentScenario]);
-
-  const startMatch = (opt) => {
-    setChoice(opt);
-    setTargetShade(getInitialTargetShade(currentScenario, opt));
-    setMatchValue(128);
-    setMessage(null);
-  };
+  }, [currentScenario, startMatch]);
 
   const tryMatch = () => {
     if (!choice) return;
@@ -87,6 +88,8 @@ export default function ShadeGame() {
     const nextScenarioObj = scenarios[nextIndex]?.variants[nextVariant];
     if (nextScenarioObj) setTargetShade(getInitialTargetShade(nextScenarioObj, null));
   };
+
+  console.log("Choice", choice);
 
   return (
     <div className="p-6 max-w-xl mx-auto space-y-6" style={{ fontFamily: "'Inter', sans-serif", marginLeft: "1in", marginRight: "1in" }}>
@@ -183,8 +186,8 @@ export default function ShadeGame() {
         </div>
       )}
 
-      <div>Redemption Rate: {Math.round(redemption)}</div>
-      <div>Variant: {variantKey}</div>
+      {/* <div>Redemption Rate: {Math.round(redemption)}</div>
+      <div>Variant: {variantKey}</div> */}
     </div>
   );
 }
