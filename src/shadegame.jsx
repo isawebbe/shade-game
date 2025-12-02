@@ -4,6 +4,7 @@ import ShadeMatcher from "./ShadeMatcher";
 import "./index.css"; // ensure this has the Inter font import or fallback
 
 export default function ShadeGame() {
+  const [showSecrets, setShowSecrets] = useState(false);
   const [scenarioIndex, setScenarioIndex] = useState(0);
   const [variantKey, setVariantKey] = useState("X"); // initial variant
   const [redemption, setRedemption] = useState(50);
@@ -50,6 +51,17 @@ export default function ShadeGame() {
     }
   }, [currentScenario]);
 
+  // useEffect to toggle secrets if someone keydowns cmd + ?
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.metaKey && event.key === "/") {
+        setShowSecrets(!showSecrets);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [showSecrets]);
+
   const handleMatchResult = (isMatch) => {
     if (!choice) return;
     if (isMatch) {
@@ -90,6 +102,12 @@ export default function ShadeGame() {
 
   return (
     <div className="p-6 max-w-xl mx-auto space-y-6" style={{ fontFamily: "'Inter', sans-serif", marginLeft: "1in", marginRight: "1in" }}>
+      {showSecrets && (
+        <div className="absolute top-2 left-2">
+          <div>Redemption Rate: {Math.round(redemption)}</div>
+          <div>Variant: {variantKey}</div>
+        </div>
+      )}
       <h1 className="text-2xl font-bold">The Motherland Calls</h1>
 
       <h2 className="text-xl font-semibold">{currentScenario?.title}</h2>
@@ -147,9 +165,6 @@ export default function ShadeGame() {
           )}
         </div>
       )}
-
-      {/* <div>Redemption Rate: {Math.round(redemption)}</div>
-      <div>Variant: {variantKey}</div> */}
     </div>
   );
 }
