@@ -12,6 +12,7 @@ export default function ShadeGame() {
   const [message, setMessage] = useState(null);
   const [locked, setLocked] = useState({ A: false, B: false, C: false });
   const [targetShade, setTargetShade] = useState(128);
+  const [shuffledOptions, setShuffledOptions] = useState([]);
 
   const forgiveness = { A: 7, B: 14, C: 20 };
   const impacts = { A: 1.15, B: 0.95, C: 0.9 };
@@ -40,6 +41,14 @@ export default function ShadeGame() {
     setTargetShade(getInitialTargetShade(currentScenario, opt));
     setMatchValue(128);
     setMessage(null);
+  }, [currentScenario]);
+
+  // Shuffle options when scenario changes
+  useEffect(() => {
+    if (currentScenario?.options) {
+      const optionsEntries = Object.entries(currentScenario.options);
+      setShuffledOptions(shuffleArray([...optionsEntries]));
+    }
   }, [currentScenario]);
 
   // Automatically start match for the first option on scenario load
@@ -108,9 +117,9 @@ export default function ShadeGame() {
         Object.keys(currentScenario.options).length > 0 &&
         !message?.includes("Matched") && (
           <div className="flex flex-col space-y-2">
-            {shuffleArray(
-              Object.entries(currentScenario.options).filter(([opt]) => !locked[opt])
-            ).map(([opt, text]) => (
+            {shuffledOptions
+              .filter(([opt]) => !locked[opt])
+              .map(([opt, text]) => (
               <button
                 key={opt}
                 className="p-2 bg-gray-200 rounded"
