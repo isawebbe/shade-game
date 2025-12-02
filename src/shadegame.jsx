@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { scenarios, randomShade, shuffleArray } from "./scenarios";
+import ShadeMatcher from "./ShadeMatcher";
 import "./index.css"; // ensure this has the Inter font import or fallback
 
 export default function ShadeGame() {
@@ -8,7 +9,6 @@ export default function ShadeGame() {
   const [redemption, setRedemption] = useState(50);
   const [attempts, setAttempts] = useState({ A: 3, B: 3, C: 3 });
   const [choice, setChoice] = useState(null);
-  const [matchValue, setMatchValue] = useState(128);
   const [message, setMessage] = useState(null);
   const [locked, setLocked] = useState({ A: false, B: false, C: false });
   const [targetShade, setTargetShade] = useState(128);
@@ -39,7 +39,6 @@ export default function ShadeGame() {
     if (!currentScenario) return;
     setChoice(opt);
     setTargetShade(getInitialTargetShade(currentScenario, opt));
-    setMatchValue(128);
     setMessage(null);
   }, [currentScenario]);
 
@@ -51,20 +50,9 @@ export default function ShadeGame() {
     }
   }, [currentScenario]);
 
-  // Automatically start match for the first option on scenario load
-  useEffect(() => {
-    if (currentScenario) {
-      const firstOption = Object.keys(currentScenario.options || {})[0];
-      if (firstOption) {
-        startMatch(firstOption);
-      }
-    }
-  }, [currentScenario, startMatch]);
-
-  const tryMatch = () => {
+  const handleMatchResult = (isMatch) => {
     if (!choice) return;
-    const diff = Math.abs(matchValue - targetShade);
-    if (diff <= forgiveness[choice]) {
+    if (isMatch) {
       setLocked({ A: true, B: true, C: true });
       setMessage("Matched! Click next to advance.");
       if (scenarioIndex < scenarios.length - 1) {
@@ -133,48 +121,13 @@ export default function ShadeGame() {
         )}
 
       {/* Matching UI */}
-      {choice && (
-        <div className="space-y-4 p-4 border rounded">
-          <div
-            className="w-24 h-24 mx-auto rounded-full"
-            style={{ backgroundColor: `rgb(${targetShade},${targetShade},${targetShade})` }}
-          />
-          <div className="flex flex-col items-center space-y-4">
-            <div
-              className="w-full h-8 rounded bg-gradient-to-r from-black to-white relative cursor-pointer"
-              onMouseDown={(e) => {
-                const rect = e.currentTarget.getBoundingClientRect();
-                const update = (clientX) => {
-                  let x = Math.min(Math.max(clientX - rect.left, 0), rect.width);
-                  setMatchValue(Math.round((x / rect.width) * 255));
-                };
-                update(e.clientX);
-                const move = (ev) => update(ev.clientX);
-                const up = () => {
-                  window.removeEventListener("mousemove", move);
-                  window.removeEventListener("mouseup", up);
-                };
-                window.addEventListener("mousemove", move);
-                window.addEventListener("mouseup", up);
-              }}
-            >
-              <div
-                className="absolute top-0 h-full w-1 bg-white"
-                style={{ left: `${(matchValue / 255) * 100}%` }}
-              />
-            </div>
-            <div
-              className="w-10 h-10 rounded-full border"
-              style={{ backgroundColor: `rgb(${matchValue},${matchValue},${matchValue})` }}
-            />
-          </div>
-          <div className="flex justify-center">
-            <button onClick={tryMatch} className="p-2 bg-blue-500 text-white rounded">
-              Submit Match
-            </button>
-          </div>
-        </div>
-      )}
+      {choice && <ShadeMatcher
+        targetShade={targetShade}
+        choice={choice}
+        forgiveness={forgiveness}
+        onMatch={handleMatchResult}
+        key={choice} // Reset component when choice changes
+      />}
 
       {/* Message & follow-up */}
       {message && (
